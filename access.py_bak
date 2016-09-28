@@ -1,0 +1,65 @@
+#!/usr/bin/python 
+# coding: utf-8
+import sys, os, urllib2, json
+reload(sys) 
+sys.setdefaultencoding('utf8')  
+import datetime
+
+
+
+ips = {}  #ip作为字典的key，访问次数做value
+city_name = {}  #城市作为字典的key，访问次数城市ip次数做value
+iplist = [] #遍历日志中的ip，相同的ip也会记录到列表，插入数据库
+listdir = os.listdir("/data/python/new")
+listdir2 = os.listdir("/data/python/logs2")
+for i in listdir:
+  fh = open("/data/python/new/"+i, "r").readlines()                                                               #我的是把日志和代码在一个目录下面
+  for line in fh:
+      ip = line.split(" ")[0]
+      if 6 < len(ip) <=15:
+          ips[ip] = ips.get(ip, 0) + 1
+      alist = iplist.append(ip)
+for j in listdir2:
+  fh = open("/data/python/logs2/"+j, "r").readlines()                                                               #我的是把日志和代码在一个目录下面
+  for line in fh:
+      ip = line.split(" ")[0]
+      if 6 < len(ip) <=15:
+          ips[ip] = ips.get(ip, 0) + 1
+      alist = iplist.append(ip)
+
+def get_ip_area(ip,cnums):
+ try:
+  apiurl = "http://ip.taobao.com/service/getIpInfo.php?ip=%s" %ip
+  content = urllib2.urlopen(apiurl).read()
+  data = json.loads(content)['data']
+  code = json.loads(content)['code']
+  if code == 0: # success
+      country=(data['country'])
+      area = (data['area'])
+      region = (data['region'])
+      city = (data['city'])
+      ip = (data['ip'])
+      ss = country+area+region+city+ip+"访问次数"+str(cnums)
+
+      print ss
+    
+    
+      #exit()
+      #print(data['country']),(data['area']),(data['region']),(data['city']),(data['ip'])
+      f = file('access.txt','a')
+      f.write(ss)
+      f.write("\n")
+      f.close()
+  else:
+   print(data)
+ except Exception as ex:
+  print(ex)
+
+if __name__ == '__main__':
+  #print iplist
+  #iplist2 = list(set(iplist))
+  #iplist2.sort(key=iplist.index)
+  #print iplist2
+  #for ip in iplist2:
+   for ip in ips:
+    get_ip_area(ip,ips[ip])
